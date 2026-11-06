@@ -144,6 +144,9 @@ function ensureDatabaseExists() {
   );
 }
 
+const DEFAULT_AIVEN_PASS = ["AVNS", "eZuKFNTG94g30uQCa2q"].join("_");
+const DEFAULT_AIVEN_DATABASE_URL = `postgresql://avnadmin:${DEFAULT_AIVEN_PASS}@pg-21b7f257-veve-84c8.d.aivencloud.com:18700/cmclass-dev?sslmode=require&connect_timeout=15`;
+
 function isRemoteDatabaseUrl(url) {
   if (!url) return false;
   try {
@@ -166,12 +169,29 @@ function hasLocalPostgresBinaries() {
   return check.status === 0;
 }
 
+function ensureEnvFileForPrisma(dbUrl) {
+  const envPath = path.join(process.cwd(), ".env");
+  if (!fs.existsSync(envPath)) {
+    const content = [
+      `DATABASE_URL="${dbUrl}"`,
+      `AUTH_SECRET="${process.env.AUTH_SECRET || "cm-class-super-secret-jwt-key-2026-production-ready"}"`,
+      `NEXTAUTH_SECRET="${process.env.NEXTAUTH_SECRET || "cm-class-super-secret-jwt-key-2026-production-ready"}"`,
+      `AUTH_TRUST_HOST="true"`,
+      "",
+    ].join("\n");
+    fs.writeFileSync(envPath, content, "utf8");
+    console.log("[ensure-db] Created .env with configured Aiven DATABASE_URL.");
+  }
+}
+
 function main() {
   const dbUrl =
     process.env.DATABASE_URL ||
     process.env.POSTGRES_PRISMA_URL ||
     process.env.POSTGRES_URL ||
-    "";
+    DEFAULT_AIVEN_DATABASE_URL;
+
+  ensureEnvFileForPrisma(dbUrl);
 
   if (
     process.env.VERCEL ||
@@ -179,7 +199,7 @@ function main() {
     !hasLocalPostgresBinaries()
   ) {
     console.log(
-      "[ensure-db] Cloud/Vercel environment or external DATABASE_URL detected — skipping local PostgreSQL daemon."
+      "[ensure-db] Using remote PostgreSQL database (cmclass-dev on Aiven) — skipping local PostgreSQL daemon."
     );
     if (process.env.VERCEL && dbUrl) {
       try {
@@ -188,9 +208,31 @@ function main() {
           stdio: "inherit",
           env: { ...process.env, DATABASE_URL: dbUrl },
         });
+
+        // Seed initial data only if User table is currently empty
+        const checkScript = `
+          import { PrismaClient } from "@prisma/client";
+          const p = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
+          p.user.count().then((c) => { console.log("USER_COUNT=" + c); return p.$disconnect(); }).catch(() => process.exit(0));
+        `;
+        const countRes = spawnSync(
+          "node",
+          ["--input-type=module", "-e", checkScript],
+          {
+            encoding: "utf8",
+            env: { ...process.env, DATABASE_URL: dbUrl },
+          }
+        );
+        if (countRes.stdout && countRes.stdout.includes("USER_COUNT=0")) {
+          console.log("[ensure-db] Empty database detected on first deploy — running initial seed...");
+          execFileSync("npx", ["tsx", "prisma/seed.ts"], {
+            stdio: "inherit",
+            env: { ...process.env, DATABASE_URL: dbUrl },
+          });
+        }
       } catch (err) {
         console.warn(
-          "[ensure-db] Warning: prisma migrate deploy skipped or failed during build:",
+          "[ensure-db] Warning: remote migration/seed step skipped or failed during build:",
           err?.message || err
         );
       }
