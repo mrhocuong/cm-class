@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Next.js build output
+.next/
+out/
+build/
+dist/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Teamwork & Orchestrator internal files (DO NOT COMMIT)
+.agents/
+ORIGINAL_REQUEST.md
+PROJECT.md
+TEST_INFRA.md
+TEST_READY.md
+
+# Local PostgreSQL data directories (if any created locally)
+.cm-class-pg/
+pg-data/
+
+# Testing & Playwright artifacts
+coverage/
+playwright-report/
+test-results/
+playwright/.cache/
+
+# Debug & OS files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+*.pem
+*.tsbuildinfo
+next-env.d.ts

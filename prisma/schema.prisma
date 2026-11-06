@@ -1,0 +1,691 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// ENUMS (17 Enums across Modules 1 - 9)
+// ============================================================================
+
+enum ClassStatus {
+  ACTIVE
+  UPCOMING
+  COMPLETED
+  ARCHIVED
+}
+
+enum BillingCycle {
+  MONTHLY
+  PER_COURSE
+  PER_SESSION
+}
+
+enum SessionStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum StudentStatus {
+  ACTIVE
+  INACTIVE
+  GRADUATED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  PAUSED
+  DROPPED
+  COMPLETED
+}
+
+enum DiscountType {
+  FIXED
+  PERCENTAGE
+}
+
+enum InvoiceStatus {
+  UNPAID
+  PARTIAL
+  PAID
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+}
+
+enum AttendanceStatus {
+  PRESENT
+  LATE
+  ABSENT_EXCUSED
+  ABSENT_UNEXCUSED
+}
+
+enum AttendanceMethod {
+  MANUAL
+  FACE_AI
+}
+
+enum HomeworkSubmissionStatus {
+  MISSING
+  SUBMITTED
+  LATE
+  GRADED
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  FILL_IN_BLANK
+  SHORT_ANSWER
+  ESSAY
+}
+
+enum QuestionDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum MinigameType {
+  SPEED_QUIZ
+  FLASH_MATCH
+  WORD_CROSS
+  TEAM_BUZZER
+  LUCKY_WHEEL
+}
+
+enum GamePlayMode {
+  INDIVIDUAL
+  TEAM
+}
+
+enum GameSessionStatus {
+  LOBBY
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+// ============================================================================
+// MODULE 1: USER & WORKSPACE
+// ============================================================================
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  passwordHash String
+  fullName     String
+  phone        String?
+  avatarUrl    String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  workspace    Workspace?
+}
+
+model Workspace {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name              String
+  logoUrl           String?
+  phone             String?
+  address           String?
+  currency          String   @default("VND")
+
+  // VietQR Bank Configuration
+  bankBin           String?
+  bankCode          String?
+  bankName          String?
+  bankAccountNumber String?
+  bankAccountName   String?
+
+  // Classroom IP Camera configuration
+  cameraStreamUrl   String?
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  classes             Class[]
+  scheduleSlots       ScheduleSlot[]
+  sessions            Session[]
+  students            Student[]
+  guardians           Guardian[]
+  enrollments         Enrollment[]
+  feePlans            FeePlan[]
+  invoices            Invoice[]
+  payments            Payment[]
+  attendances         Attendance[]
+  faceDescriptors     FaceDescriptor[]
+  homeworks           Homework[]
+  homeworkSubmissions HomeworkSubmission[]
+  exerciseQuestions   ExerciseQuestion[]
+  minigames           Minigame[]
+  gameSessions        GameSession[]
+  gameResults         GameResult[]
+  leaderboardConfigs  LeaderboardConfig[]
+  pointTransactions   PointTransaction[]
+}
+
+// ============================================================================
+// MODULE 2: CLASSES, SCHEDULE SLOTS & SESSIONS
+// ============================================================================
+
+model Class {
+  id               String       @id @default(cuid())
+  workspaceId      String
+  workspace        Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  code             String
+  name             String
+  subject          String
+  gradeLevel       String?
+  room             String?
+  defaultFeeAmount Int          @default(0)
+  billingCycle     BillingCycle @default(MONTHLY)
+  startDate        DateTime?
+  endDate          DateTime?
+  description      String?
+  color            String?      @default("#2563eb")
+  status           ClassStatus  @default(ACTIVE)
+
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  scheduleSlots      ScheduleSlot[]
+  sessions           Session[]
+  enrollments        Enrollment[]
+  feePlans           FeePlan[]
+  invoices           Invoice[]
+  homeworks          Homework[]
+  gameSessions       GameSession[]
+  leaderboardConfigs LeaderboardConfig[]
+  pointTransactions  PointTransaction[]
+
+  @@unique([workspaceId, code])
+  @@index([workspaceId, status])
+}
+
+model ScheduleSlot {
+  id          String    @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  classId     String
+  class       Class     @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  dayOfWeek   Int       // 0 = Sunday .. 6 = Saturday
+  startTime   String    // "HH:mm"
+  endTime     String    // "HH:mm"
+  room        String?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  sessions    Session[]
+
+  @@index([workspaceId, dayOfWeek])
+  @@index([classId, dayOfWeek])
+}
+
+model Session {
+  id             String        @id @default(cuid())
+  workspaceId    String
+  workspace      Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  classId        String
+  class          Class         @relation(fields: [classId], references: [id], onDelete: Cascade)
+  scheduleSlotId String?
+  scheduleSlot   ScheduleSlot? @relation(fields: [scheduleSlotId], references: [id], onDelete: SetNull)
+
+  sessionDate    DateTime
+  startTime      String        // "HH:mm"
+  endTime        String        // "HH:mm"
+  room           String?
+  topic          String?
+  notes          String?
+  status         SessionStatus @default(SCHEDULED)
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  attendances       Attendance[]
+  homeworks         Homework[]
+  gameSessions      GameSession[]
+  pointTransactions PointTransaction[]
+
+  @@unique([classId, sessionDate, startTime])
+  @@index([workspaceId, sessionDate])
+  @@index([classId, sessionDate])
+}
+
+// ============================================================================
+// MODULE 3: STUDENTS, GUARDIANS & ENROLLMENTS
+// ============================================================================
+
+model Student {
+  id          String        @id @default(cuid())
+  workspaceId String
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  studentCode String
+  fullName    String
+  dateOfBirth DateTime?
+  gender      Gender?
+  school      String?
+  phone       String?
+  avatarUrl   String?
+  notes       String?
+  status      StudentStatus @default(ACTIVE)
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  guardians           Guardian[]
+  enrollments         Enrollment[]
+  invoices            Invoice[]
+  attendances         Attendance[]
+  faceDescriptors     FaceDescriptor[]
+  homeworkSubmissions HomeworkSubmission[]
+  gameResults         GameResult[]
+  pointTransactions   PointTransaction[]
+
+  @@unique([workspaceId, studentCode])
+  @@index([workspaceId, status])
+  @@index([workspaceId, fullName])
+}
+
+model Guardian {
+  id           String    @id @default(cuid())
+  workspaceId  String
+  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  studentId    String
+  student      Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  fullName     String
+  relationship String
+  phone        String
+  email        String?
+  zalo         String?
+  address      String?
+  isPrimary    Boolean   @default(false)
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([workspaceId, studentId])
+  @@index([studentId])
+}
+
+model Enrollment {
+  id                String           @id @default(cuid())
+  workspaceId       String
+  workspace         Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  classId           String
+  class             Class            @relation(fields: [classId], references: [id], onDelete: Cascade)
+  studentId         String
+  student           Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  enrolledAt        DateTime         @default(now())
+  leftAt            DateTime?
+  status            EnrollmentStatus @default(ACTIVE)
+  discountType      DiscountType     @default(FIXED)
+  customFeeDiscount Int              @default(0)
+  discountNote      String?
+
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  @@unique([classId, studentId])
+  @@index([workspaceId, classId, status])
+  @@index([workspaceId, studentId])
+}
+
+// ============================================================================
+// MODULE 4: FEE PLANS, INVOICES & PAYMENTS
+// ============================================================================
+
+model FeePlan {
+  id           String       @id @default(cuid())
+  workspaceId  String
+  workspace    Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  classId      String
+  class        Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  name         String
+  billingCycle BillingCycle @default(MONTHLY)
+  amount       Int
+  currency     String       @default("VND")
+  description  String?
+  isDefault    Boolean      @default(true)
+
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  invoices     Invoice[]
+
+  @@index([workspaceId, classId])
+}
+
+model Invoice {
+  id             String        @id @default(cuid())
+  workspaceId    String
+  workspace      Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  classId        String
+  class          Class         @relation(fields: [classId], references: [id], onDelete: Cascade)
+  studentId      String
+  student        Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  feePlanId      String?
+  feePlan        FeePlan?      @relation(fields: [feePlanId], references: [id], onDelete: SetNull)
+
+  invoiceNumber  String
+  title          String
+  billingPeriod  String        // "YYYY-MM"
+  sessionCount   Int?
+  baseAmount     Int
+  discountAmount Int           @default(0)
+  discountReason String?
+  netAmount      Int
+  paidAmount     Int           @default(0)
+  status         InvoiceStatus @default(UNPAID)
+  dueDate        DateTime
+  issuedAt       DateTime      @default(now())
+  notes          String?
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  payments       Payment[]
+
+  @@unique([workspaceId, invoiceNumber])
+  @@index([workspaceId, billingPeriod, status])
+  @@index([workspaceId, classId, billingPeriod])
+  @@index([workspaceId, studentId])
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  workspaceId   String
+  workspace     Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  invoiceId     String
+  invoice       Invoice       @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  receiptNumber String
+  amount        Int
+  method        PaymentMethod @default(BANK_TRANSFER)
+  paidAt        DateTime      @default(now())
+  collectorName String?
+  referenceCode String?
+  receiptNote   String?
+
+  createdAt     DateTime      @default(now())
+
+  @@index([workspaceId, invoiceId])
+  @@index([workspaceId, paidAt])
+}
+
+// ============================================================================
+// MODULE 5: ATTENDANCE, FACE DESCRIPTORS & HOMEWORK
+// ============================================================================
+
+model Attendance {
+  id              String           @id @default(cuid())
+  workspaceId     String
+  workspace       Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  sessionId       String
+  session         Session          @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  studentId       String
+  student         Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  status          AttendanceStatus @default(PRESENT)
+  checkInAt       DateTime?
+  checkOutAt      DateTime?
+  method          AttendanceMethod @default(MANUAL)
+  confidenceScore Float?
+  notes           String?
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@unique([sessionId, studentId])
+  @@index([workspaceId, studentId])
+  @@index([sessionId])
+}
+
+model FaceDescriptor {
+  id             String    @id @default(cuid())
+  workspaceId    String
+  workspace      Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  studentId      String
+  student        Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  descriptor     Json      // number[128]
+  label          String?
+  sampleImageUrl String?
+  source         String    @default("UPLOAD") // "WEBCAM" | "UPLOAD" | "SYNTHETIC"
+
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([workspaceId, studentId])
+}
+
+model Homework {
+  id              String    @id @default(cuid())
+  workspaceId     String
+  workspace       Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  classId         String
+  class           Class     @relation(fields: [classId], references: [id], onDelete: Cascade)
+  sessionId       String?
+  session         Session?  @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+
+  title           String
+  description     String?
+  dueDate         DateTime
+  maxScore        Float     @default(10)
+  attachmentsJson Json?
+  questionIdsJson Json?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  submissions     HomeworkSubmission[]
+
+  @@index([workspaceId, classId])
+  @@index([sessionId])
+}
+
+model HomeworkSubmission {
+  id             String                   @id @default(cuid())
+  workspaceId    String
+  workspace      Workspace                @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  homeworkId     String
+  homework       Homework                 @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
+  studentId      String
+  student        Student                  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  status         HomeworkSubmissionStatus @default(MISSING)
+  score          Float?
+  feedback       String?
+  submissionNote String?
+  attachmentUrl  String?
+  submittedAt    DateTime?
+  gradedAt       DateTime?
+
+  createdAt      DateTime                 @default(now())
+  updatedAt      DateTime                 @updatedAt
+
+  @@unique([homeworkId, studentId])
+  @@index([workspaceId, studentId])
+}
+
+// ============================================================================
+// MODULE 7: EXERCISE & QUESTION BANK
+// ============================================================================
+
+model ExerciseQuestion {
+  id            String             @id @default(cuid())
+  workspaceId   String
+  workspace     Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  type          QuestionType       @default(MULTIPLE_CHOICE)
+  subject       String
+  topic         String
+  difficulty    QuestionDifficulty @default(MEDIUM)
+  prompt        String
+  optionsJson   Json?
+  correctAnswer String
+  explanation   String?
+  points        Float              @default(10)
+  tagsJson      Json?
+
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  @@index([workspaceId, subject, difficulty])
+  @@index([workspaceId, type])
+}
+
+// ============================================================================
+// MODULE 6: MINIGAME BANK
+// ============================================================================
+
+model Minigame {
+  id                String       @id @default(cuid())
+  workspaceId       String
+  workspace         Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  title             String
+  type              MinigameType @default(SPEED_QUIZ)
+  description       String?
+  timeLimit         Int          @default(30)
+  pointsPerQuestion Float        @default(100)
+  rulesJson         Json?
+  questionIdsJson   Json?
+  tagsJson          Json?
+
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  gameSessions      GameSession[]
+
+  @@index([workspaceId, type])
+}
+
+// ============================================================================
+// MODULE 8: LIVE SESSION GAME HOSTING & RESULT RECORDING
+// ============================================================================
+
+model GameSession {
+  id                    String            @id @default(cuid())
+  workspaceId           String
+  workspace             Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  classId               String
+  class                 Class             @relation(fields: [classId], references: [id], onDelete: Cascade)
+  sessionId             String?
+  session               Session?          @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  minigameId            String
+  minigame              Minigame          @relation(fields: [minigameId], references: [id], onDelete: Cascade)
+
+  title                 String
+  mode                  GamePlayMode      @default(INDIVIDUAL)
+  status                GameSessionStatus @default(IN_PROGRESS)
+  questionsSnapshotJson Json
+  teamsConfigJson       Json?
+  stateJson             Json?
+  startedAt             DateTime          @default(now())
+  endedAt               DateTime?
+
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  results               GameResult[]
+
+  @@index([workspaceId, classId])
+  @@index([sessionId])
+}
+
+model GameResult {
+  id             String      @id @default(cuid())
+  workspaceId    String
+  workspace      Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  gameSessionId  String
+  gameSession    GameSession @relation(fields: [gameSessionId], references: [id], onDelete: Cascade)
+  studentId      String
+  student        Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  teamName       String?
+  score          Float       @default(0)
+  correctCount   Int         @default(0)
+  totalQuestions Int         @default(0)
+  accuracy       Float       @default(0)
+  rank           Int         @default(1)
+  bonusPoints    Float       @default(0)
+
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@unique([gameSessionId, studentId])
+  @@index([workspaceId, studentId])
+}
+
+// ============================================================================
+// MODULE 9: CUSTOM CRITERIA LEADERBOARD & POINT TRANSACTIONS
+// ============================================================================
+
+model LeaderboardConfig {
+  id               String    @id @default(cuid())
+  workspaceId      String
+  workspace        Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  classId          String?
+  class            Class?    @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  name             String
+  attendanceWeight Float     @default(25)
+  homeworkWeight   Float     @default(35)
+  gameWeight       Float     @default(25)
+  bonusWeight      Float     @default(15)
+  periodStart      DateTime?
+  periodEnd        DateTime?
+  rulesJson        Json?
+  isDefault        Boolean   @default(false)
+
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([workspaceId, classId])
+}
+
+model PointTransaction {
+  id          String    @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  classId     String?
+  class       Class?    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  sessionId   String?
+  session     Session?  @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  studentId   String
+  student     Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  points      Float
+  reason      String
+  category    String    @default("BONUS") // "BONUS" | "PENALTY" | "ACHIEVEMENT"
+  awardedAt   DateTime  @default(now())
+
+  createdAt   DateTime  @default(now())
+
+  @@index([workspaceId, studentId])
+  @@index([workspaceId, classId])
+}
