@@ -176,21 +176,22 @@ export default function SchedulePage() {
       {/* Header */}
       <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
             Thời khoá biểu & Lịch dạy hàng tuần
           </h1>
-          <p className="text-sm text-slate-600">
+          <p className="text-xs sm:text-sm text-slate-600">
             Tuần hiển thị: <strong>{formatDateVn(weekStart)}</strong> —{" "}
             <strong>{formatDateVn(weekEnd)}</strong> • Tự động cảnh báo trùng
             giờ dạy và trùng phòng học
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1">
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+          <div className="flex w-full items-center justify-between gap-1 rounded-lg border border-slate-200 bg-white p-1 sm:w-auto sm:justify-start">
             <Button
               variant="ghost"
               size="sm"
+              className="flex-1 sm:flex-initial"
               onClick={() => shiftWeek(-7)}
             >
               <ChevronLeft className="h-4 w-4" />
@@ -199,6 +200,7 @@ export default function SchedulePage() {
             <Button
               variant="ghost"
               size="sm"
+              className="flex-1 sm:flex-initial"
               onClick={() => setWeekStart("")}
             >
               Tuần hiện tại
@@ -206,6 +208,7 @@ export default function SchedulePage() {
             <Button
               variant="ghost"
               size="sm"
+              className="flex-1 sm:flex-initial"
               onClick={() => shiftWeek(7)}
             >
               <span>Tuần sau</span>
@@ -213,26 +216,29 @@ export default function SchedulePage() {
             </Button>
           </div>
 
-          <Select
-            className="w-48"
-            value={classFilter}
-            onChange={(e) => setClassFilter(e.target.value)}
-          >
-            <option value="">Tất cả lớp học</option>
-            {classes.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.code} — {c.name}
-              </option>
-            ))}
-          </Select>
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+            <Select
+              className="w-full sm:w-52"
+              value={classFilter}
+              onChange={(e) => setClassFilter(e.target.value)}
+            >
+              <option value="">Tất cả lớp học</option>
+              {classes.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.code} — {c.name}
+                </option>
+              ))}
+            </Select>
 
-          <Button
-            data-testid="open-generate-sessions-modal"
-            onClick={() => setOpenGenModal(true)}
-          >
-            <Sparkles className="h-4 w-4" />
-            <span>Sinh buổi học từ TKB</span>
-          </Button>
+            <Button
+              data-testid="open-generate-sessions-modal"
+              className="w-full sm:w-auto"
+              onClick={() => setOpenGenModal(true)}
+            >
+              <Sparkles className="h-4 w-4" />
+              <span>Sinh buổi học từ TKB</span>
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -265,10 +271,10 @@ export default function SchedulePage() {
         </div>
       )}
 
-      {/* 7-Column Weekly Grid */}
+      {/* 7-Column Weekly Grid (1 col mobile, 2 cols small tablet, 4 cols landscape tablet, 7 cols wide desktop) */}
       <div
         data-testid="schedule-grid"
-        className="grid grid-cols-1 gap-3 md:grid-cols-7"
+        className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7"
       >
         {WEEK_DAYS_ORDER.map((dayNum, colIdx) => {
           const daySlots = slots.filter((s) => s.dayOfWeek === dayNum);

@@ -14,9 +14,11 @@ export default async function AppShellLayout({
   }
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-slate-50">
+    <div className="flex min-h-dvh w-full flex-col bg-slate-50 lg:h-screen lg:flex-row lg:overflow-hidden">
       <Sidebar user={ctx.user} workspace={ctx.workspace} />
-      <main className="flex-1 overflow-y-auto p-6 lg:p-8">{children}</main>
+      <main className="flex-1 min-w-0 overflow-y-auto px-3.5 py-4 pb-24 sm:px-6 sm:py-6 lg:p-8 lg:pb-8">
+        {children}
+      </main>
     </div>
   );
 }

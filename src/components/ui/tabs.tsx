@@ -58,7 +58,7 @@ export function TabsList({
     <div
       role="tablist"
       className={cn(
-        "inline-flex h-10 items-center justify-center rounded-lg bg-slate-100 p-1 text-slate-600",
+        "no-scrollbar flex h-auto min-h-10 w-full max-w-full items-center justify-start gap-1 overflow-x-auto rounded-xl bg-slate-100 p-1 text-slate-600 sm:inline-flex sm:w-auto sm:justify-center",
         className
       )}
       {...props}
@@ -87,7 +87,7 @@ export function TabsTrigger({
       aria-selected={active}
       onClick={() => ctx.onValueChange(value)}
       className={cn(
-        "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-all",
+        "inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-lg px-3 py-1.5 text-xs sm:text-sm font-medium transition-all",
         active
           ? "bg-white text-slate-900 shadow-xs"
           : "text-slate-600 hover:text-slate-900",

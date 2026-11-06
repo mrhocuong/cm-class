@@ -399,7 +399,7 @@ export default function ClassDetailPage() {
             <CardContent>
               <form
                 onSubmit={handleEnrollStudent}
-                className="grid grid-cols-1 gap-3 sm:grid-cols-5 sm:items-end"
+                className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5 lg:items-end"
               >
                 <div className="space-y-1 sm:col-span-2">
                   <Label>Chọn học sinh</Label>
@@ -443,7 +443,11 @@ export default function ClassDetailPage() {
                   />
                 </div>
 
-                <Button type="submit" data-testid="submit-enroll-student">
+                <Button
+                  type="submit"
+                  data-testid="submit-enroll-student"
+                  className="sm:col-span-2 lg:col-span-1"
+                >
                   <Plus className="h-4 w-4" />
                   <span>Ghi danh</span>
                 </Button>
@@ -546,7 +550,7 @@ export default function ClassDetailPage() {
               <CardContent className="space-y-4">
                 <form
                   onSubmit={handleAddSlot}
-                  className="grid grid-cols-1 gap-2 sm:grid-cols-4 sm:items-end"
+                  className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4 xl:items-end"
                 >
                   <div className="space-y-1">
                     <Label>Thứ</Label>
@@ -587,9 +591,9 @@ export default function ClassDetailPage() {
                   {cls.scheduleSlots.map((slot) => (
                     <div
                       key={slot.id}
-                      className="flex items-center justify-between rounded-lg border border-slate-200 p-3"
+                      className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 p-3"
                     >
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <Clock className="h-4 w-4 text-blue-600" />
                         <span className="font-semibold">
                           {DAY_OF_WEEK_LABELS[slot.dayOfWeek]}
@@ -624,7 +628,7 @@ export default function ClassDetailPage() {
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleGenerateSessions} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div className="space-y-1">
                       <Label>Từ ngày</Label>
                       <Input
@@ -646,6 +650,7 @@ export default function ClassDetailPage() {
                   </div>
                   <Button
                     type="submit"
+                    className="w-full sm:w-auto"
                     data-testid="class-generate-sessions-btn"
                   >
                     <Sparkles className="h-4 w-4" />
@@ -724,7 +729,7 @@ export default function ClassDetailPage() {
             <CardContent className="space-y-4">
               <form
                 onSubmit={handleCreateFeePlan}
-                className="grid grid-cols-1 gap-3 sm:grid-cols-4 sm:items-end"
+                className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:items-end"
               >
                 <div className="space-y-1">
                   <Label>Tên biểu phí</Label>

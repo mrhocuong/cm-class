@@ -434,10 +434,10 @@ export default function FeesPage() {
       {/* Header */}
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
             Quản lý Học phí, Biểu phí & VietQR
           </h1>
-          <p className="text-sm text-slate-600">
+          <p className="text-xs sm:text-sm text-slate-600">
             Lập phiếu thu học phí hàng loạt, tạo mã VietQR động cho từng khoản
             thu và theo dõi báo cáo công nợ
           </p>
@@ -446,6 +446,7 @@ export default function FeesPage() {
         <div className="flex flex-wrap items-center gap-2">
           <Button
             variant="outline"
+            className="flex-1 sm:flex-initial"
             data-testid="open-create-fee-plan-btn"
             onClick={() => setOpenPlanDialog(true)}
           >
@@ -453,6 +454,7 @@ export default function FeesPage() {
             <span>+ Tạo biểu phí</span>
           </Button>
           <Button
+            className="flex-1 sm:flex-initial"
             data-testid="open-generate-invoices-btn"
             onClick={() => setOpenGenDialog(true)}
           >
@@ -548,7 +550,7 @@ export default function FeesPage() {
         {/* Tab 1: Invoices */}
         <TabsContent value="invoices" className="space-y-4">
           <Card>
-            <CardContent className="grid grid-cols-1 gap-3 p-4 md:grid-cols-4">
+            <CardContent className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4">
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
                 <Input

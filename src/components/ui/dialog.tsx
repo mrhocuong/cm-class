@@ -82,12 +82,12 @@ export function DialogContent({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-xs">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/50 p-2 sm:items-center sm:p-4 backdrop-blur-xs">
       <div
         role="dialog"
         aria-modal="true"
         className={cn(
-          "relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-slate-200 bg-white p-6 shadow-xl",
+          "relative max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-xl sm:rounded-xl sm:p-6",
           className
         )}
         {...props}
@@ -96,7 +96,7 @@ export function DialogContent({
           type="button"
           onClick={() => setOpen(false)}
           aria-label="Đóng"
-          className="absolute right-4 top-4 rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+          className="absolute right-3.5 top-3.5 rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 sm:right-4 sm:top-4"
         >
           <X className="h-4 w-4" />
         </button>
@@ -112,7 +112,7 @@ export function DialogHeader({
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn("flex flex-col space-y-1.5 text-left mb-4", className)}
+      className={cn("flex flex-col space-y-1.5 pr-6 text-left mb-4", className)}
       {...props}
     />
   );
@@ -124,7 +124,7 @@ export function DialogTitle({
 }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
     <h2
-      className={cn("text-lg font-semibold text-slate-900", className)}
+      className={cn("text-base sm:text-lg font-semibold text-slate-900", className)}
       {...props}
     />
   );
@@ -135,7 +135,7 @@ export function DialogDescription({
   ...props
 }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
-    <p className={cn("text-sm text-slate-500", className)} {...props} />
+    <p className={cn("text-xs sm:text-sm text-slate-500", className)} {...props} />
   );
 }
 
@@ -146,7 +146,7 @@ export function DialogFooter({
   return (
     <div
       className={cn(
-        "mt-6 flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
+        "mt-5 flex flex-col-reverse gap-2 sm:mt-6 sm:flex-row sm:justify-end sm:gap-2 [&>button]:w-full sm:[&>button]:w-auto",
         className
       )}
       {...props}

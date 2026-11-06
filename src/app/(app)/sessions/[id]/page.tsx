@@ -621,7 +621,7 @@ export default function SessionDetailPage() {
       )}
 
       <Tabs defaultValue="attendance">
-        <TabsList className="flex flex-wrap gap-1 h-auto p-1">
+        <TabsList>
           <TabsTrigger value="attendance" data-testid="tab-attendance">
             <UserCheck className="mr-1.5 h-4 w-4" />
             <span>Điểm danh & Sĩ số ({roster.length})</span>
@@ -651,7 +651,7 @@ export default function SessionDetailPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <div className="space-y-1.5">
                   <Label>Trạng thái buổi học</Label>
                   <Select
@@ -718,6 +718,7 @@ export default function SessionDetailPage() {
                 <Button
                   data-testid="btn-mark-all-present"
                   variant="success"
+                  className="flex-1 sm:flex-initial"
                   disabled={isCancelled}
                   onClick={() => handleBulkAction("MARK_ALL_PRESENT")}
                 >
@@ -727,6 +728,7 @@ export default function SessionDetailPage() {
                 <Button
                   data-testid="btn-checkout-all"
                   variant="secondary"
+                  className="flex-1 sm:flex-initial"
                   disabled={isCancelled}
                   onClick={() => handleBulkAction("CHECK_OUT_ALL")}
                 >

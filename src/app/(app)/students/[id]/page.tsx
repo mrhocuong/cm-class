@@ -440,7 +440,7 @@ export default function StudentDetailPage() {
           <CardContent className="space-y-4">
             <form
               onSubmit={handleAddGuardian}
-              className="grid grid-cols-1 gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3 sm:grid-cols-4 sm:items-end"
+              className="grid grid-cols-1 gap-2.5 rounded-xl border border-slate-200 bg-slate-50 p-3 sm:grid-cols-2 xl:grid-cols-4 xl:items-end"
             >
               <div className="space-y-1">
                 <Label>Họ tên PH</Label>
@@ -484,7 +484,7 @@ export default function StudentDetailPage() {
                   className="flex flex-col justify-between gap-2 rounded-xl border border-slate-200 p-3 sm:flex-row sm:items-center"
                 >
                   <div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <span className="font-semibold text-slate-900">
                         {g.fullName}
                       </span>
@@ -539,7 +539,7 @@ export default function StudentDetailPage() {
         <CardContent className="space-y-4">
           <form
             onSubmit={handleAddEnrollment}
-            className="grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:grid-cols-5 sm:items-end"
+            className="grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:grid-cols-2 lg:grid-cols-5 lg:items-end"
           >
             <div className="space-y-1 sm:col-span-2">
               <Label>Chọn lớp học</Label>
@@ -580,7 +580,7 @@ export default function StudentDetailPage() {
               />
             </div>
 
-            <Button type="submit">
+            <Button type="submit" className="sm:col-span-2 lg:col-span-1">
               <Plus className="h-4 w-4" />
               <span>Ghi danh vào lớp</span>
             </Button>

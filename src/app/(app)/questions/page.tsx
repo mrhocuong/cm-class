@@ -535,8 +535,8 @@ export default function QuestionsBankPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-3 lg:grid-cols-6">
-            <div className="relative lg:col-span-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+            <div className="relative sm:col-span-2 lg:col-span-3 xl:col-span-2">
               <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
               <Input
                 data-testid="filter-question-search"

@@ -212,10 +212,10 @@ export default function StudentsPage() {
       {/* Header */}
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
             Quản lý Học sinh & Phụ huynh
           </h1>
-          <p className="text-sm text-slate-600">
+          <p className="text-xs sm:text-sm text-slate-600">
             Hồ sơ học sinh, thông tin liên hệ phụ huynh (Zalo/SĐT), lớp theo học
             và ưu đãi học phí
           </p>
@@ -223,6 +223,7 @@ export default function StudentsPage() {
 
         <Button
           data-testid="open-create-student-dialog"
+          className="w-full sm:w-auto"
           onClick={() => {
             setFormError(null);
             setOpenCreate(true);
@@ -235,8 +236,8 @@ export default function StudentsPage() {
 
       {/* Filter Bar */}
       <Card>
-        <CardContent className="grid grid-cols-1 gap-3 p-4 md:grid-cols-4">
-          <div className="relative md:col-span-2">
+        <CardContent className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="relative sm:col-span-2">
             <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
             <Input
               data-testid="student-search-input"
