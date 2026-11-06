@@ -199,7 +199,9 @@ export function setSessionCookieOnResponse(
     path: "/",
     secure:
       process.env.NODE_ENV === "production" &&
-      Boolean(process.env.NEXTAUTH_URL?.startsWith("https://")),
+      Boolean(
+        process.env.VERCEL || process.env.NEXTAUTH_URL?.startsWith("https://")
+      ),
     maxAge: maxAgeSeconds,
   });
   return res;

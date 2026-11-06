@@ -144,7 +144,60 @@ function ensureDatabaseExists() {
   );
 }
 
+function isRemoteDatabaseUrl(url) {
+  if (!url) return false;
+  try {
+    const parsed = new URL(url);
+    return (
+      parsed.hostname !== "localhost" &&
+      parsed.hostname !== "127.0.0.1" &&
+      parsed.hostname !== "::1"
+    );
+  } catch {
+    return false;
+  }
+}
+
+function hasLocalPostgresBinaries() {
+  if (fs.existsSync(path.join(PG_BIN_DIR, "initdb"))) {
+    return true;
+  }
+  const check = spawnSync("which", ["initdb"], { stdio: "ignore" });
+  return check.status === 0;
+}
+
 function main() {
+  const dbUrl =
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_PRISMA_URL ||
+    process.env.POSTGRES_URL ||
+    "";
+
+  if (
+    process.env.VERCEL ||
+    isRemoteDatabaseUrl(dbUrl) ||
+    !hasLocalPostgresBinaries()
+  ) {
+    console.log(
+      "[ensure-db] Cloud/Vercel environment or external DATABASE_URL detected — skipping local PostgreSQL daemon."
+    );
+    if (process.env.VERCEL && dbUrl) {
+      try {
+        console.log("[ensure-db] Running prisma migrate deploy on remote database...");
+        execFileSync("npx", ["prisma", "migrate", "deploy"], {
+          stdio: "inherit",
+          env: { ...process.env, DATABASE_URL: dbUrl },
+        });
+      } catch (err) {
+        console.warn(
+          "[ensure-db] Warning: prisma migrate deploy skipped or failed during build:",
+          err?.message || err
+        );
+      }
+    }
+    return;
+  }
+
   ensureDirectories();
   if (!isPgReady()) {
     initClusterIfNeeded();
